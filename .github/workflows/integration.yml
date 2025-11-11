@@ -1,0 +1,51 @@
+name: Integration Workflow
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          
+
+      # ===== CLIENT BUILD =====
+      - name: Install Client Dependencies
+        run: |
+          cd client
+          npm install
+
+      - name: Build Client
+        run: |
+          cd client
+          npm run build
+
+      # ===== SERVER BUILD & TEST =====
+      - name: Install Server Dependencies
+        run: |
+          cd server
+          npm install
+
+      - name: Run Server Tests
+        run: |
+          cd server
+          npm test
+
+      - name: Build Server
+        run: |
+          cd server
+          npm run build || echo "No build step"
